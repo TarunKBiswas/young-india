@@ -71,10 +71,20 @@ const CheckoutPayment = () => {
     }
   } else {
     productDetails = snap?.cartItems?.map((data) => {
-      // console.log(data);
+      console.log(data);
       const productDetail = {
-        VariantId: data?.CartVariant?.VariantId,
+        VariantId: data?.id,
         quantity: data?.CartVariant?.quantity,
+        selectedWeight: data?.CartVariant?.selectedWeight
+          ? {
+              ...data.CartVariant.selectedWeight,
+              price: Number(data.CartVariant.selectedWeight.price),
+              strike_price: Number(
+                data.CartVariant.selectedWeight.strike_price
+              ),
+              quantity: Number(data.CartVariant.selectedWeight.quantity),
+            }
+          : null,
       };
 
       if (data?.couponCode) {
