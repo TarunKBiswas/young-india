@@ -8,7 +8,7 @@ import { getBlogs } from "../../../utils/blogsNew";
 const BlogsListing = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const subdomain = window?.location?.hostname?.split(".")[0];
+  const subdomain = window?.location?.hostname?.split(".")[1];
   const isBlogSubdomain = subdomain === "dashboard";
   const navigate = useNavigate();
 

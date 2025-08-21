@@ -22,7 +22,7 @@ const ProductCard = ({ product, onClick }) => {
 
   const name = item?.name;
 
-  // console.log(item);
+  console.log(item);
 
   const thumbnail =
     item?.thumbnail?.url ||
@@ -35,10 +35,18 @@ const ProductCard = ({ product, onClick }) => {
   //   const price = item?.variants?.at(0)?.price || "Not Available";
   // const strikePrice = item?.variants?.at(0)?.strike_price || "Not Available";
 
-  const price =
-    item?.variants?.length > 0
-      ? Math.min(...item.variants.map((v) => v.price))
-      : "Not Available";
+  const price = item?.variants?.length
+    ? Math.min(
+        ...item.variants.map((v) => {
+          if (v.weights_pricing && v.weights_pricing.length > 0) {
+            // if weights_pricing exists, take min price from it
+            return Math.min(...v.weights_pricing.map((wp) => Number(wp.price)));
+          }
+          // otherwise use variant price
+          return Number(v.price) || Infinity;
+        })
+      )
+    : "Not Available";
 
   const strikePrice =
     item?.variants?.length > 0
