@@ -152,7 +152,7 @@ const Return = lazy(() =>
 
 function App() {
   const snap = useSnapshot(state);
-  const domainName = window?.location?.hostname?.split(".")[0];
+  const domainName = window?.location?.hostname?.split(".")[1];
 
   const getGlobalDetails = useCallback(async () => {
     try {
