@@ -100,7 +100,7 @@ export const dashboardStatsCard = (data, liveData) => {
     {
       statTitle: "Shares",
       StatIcon: FaShare,
-      statValue: data?.shares || 10,
+      statValue: data?.shares || 0,
       bgColor: "bg-orange-100",
       iconStyle: "fill-orange-600",
       to: "",

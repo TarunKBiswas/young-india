@@ -25,6 +25,7 @@ import { getCollections } from "../../../utils/collectionsAPI.js";
 import { AddButton } from "../UI/Buttons/AddButton.jsx";
 import RatingInput from "../UI/Inputs/RatingInput.jsx";
 import OutletWrapper from "../../../Pages/OutletWrapper.jsx";
+import Multiselect from "multiselect-react-dropdown";
 
 const schema = yup.object({
   name: yup.string(),
@@ -88,12 +89,52 @@ const AddProduct = () => {
 
   const [returnDays, setReturnDays] = useState(7);
 
+  const [selectedWeights, setSelectedWeights] = useState([]);
+  const [weightsPricing, setWeightsPricing] = useState([]);
+  const [useAttributes, setUseAttributes] = useState(false);
+
+  const weights = [
+    { label: "500gm", value: "500gm" },
+    { label: "1kg", value: "1kg" },
+    { label: "2kg", value: "2kg" },
+    { label: "3kg", value: "3kg" },
+    { label: "4kg", value: "4kg" },
+    { label: "5kg", value: "5kg" },
+  ];
   const snap = useSnapshot(state);
   const naviagte = useNavigate();
 
   const getCollection = async () => {
     const res = await getCollections();
     setCollections(res?.data?.data);
+  };
+
+  const handleWeightChange = (selectedList) => {
+    const newWeights = selectedList.map((item) => item.value);
+    setSelectedWeights(newWeights);
+
+    // Initialize / preserve pricing per weight
+    setWeightsPricing((prev) => {
+      return newWeights.map((w) => {
+        const existing = prev.find((p) => p.weight === w);
+        return (
+          existing || {
+            weight: w,
+            price: "",
+            strike_price: "",
+            quantity: "",
+            // booking_price: "",
+            // premium_price: "",
+          }
+        );
+      });
+    });
+  };
+
+  const handlePricingChange = (index, field, value) => {
+    const newPricing = [...weightsPricing];
+    newPricing[index][field] = value;
+    setWeightsPricing(newPricing);
   };
 
   useEffect(() => {
@@ -189,15 +230,42 @@ const AddProduct = () => {
   // };
 
   const addVariantHandler = async () => {
-    const data = {
-      name: variants,
-      price,
-      bulk_pricing: [],
-      strike_price: strikePrice,
-      quantity,
-    };
+    let data;
 
-    if (data?.name && data?.quantity && data?.price && data?.strike_price) {
+    if (!useAttributes) {
+      // -------- Simple Variant --------
+      data = {
+        name: variants, // or maybe just "" if you don’t want a name
+        price,
+        bulk_pricing: [],
+        strike_price: strikePrice,
+        quantity,
+      };
+    } else {
+      // -------- Flavour + Weights Variant --------
+      data = {
+        name: variants,
+        primary: {
+          name: "Flavours",
+          values: {
+            value: variants,
+            hex_code: "",
+          },
+        },
+        secondary: {
+          name: "Weights",
+          values: {
+            value: selectedWeights,
+            hex_code: "",
+          },
+        },
+        weights_pricing: weightsPricing,
+      };
+    }
+
+    console.log(data);
+
+    if (data?.name) {
       // if (variantThumbnail !== null) {
 
       //   let formdata = new FormData();
@@ -246,6 +314,10 @@ const AddProduct = () => {
       setStrikePrice("");
       // setPremiumPrice("");
       setQuantity("");
+
+      setSelectedWeights([]);
+      setWeightsPricing([]);
+      setUseAttributes(false);
     }
   };
 
@@ -661,46 +733,161 @@ const AddProduct = () => {
                     <BsPlus className="h-5 w-5" />
                   </div>
                 </div>
-                <div className="w-full flex items-center flex-col gap-2 my-2">
-                  <div className="w-full grid grid-cols-2 gap-4">
-                    <InputCompState
-                      label={"Name"}
-                      value={variants}
-                      setValue={setVariants}
-                      required={true}
+                <div className="w-full flex flex-col gap-2 my-2">
+                  {/* Toggle */}
+                  <div className="w-full flex items-center space-x-2 mb-2">
+                    <input
+                      type="checkbox"
+                      checked={useAttributes}
+                      onChange={(e) => setUseAttributes(e.target.checked)}
                     />
-                    <InputCompState
-                      label={"Quantity"}
-                      value={quantity}
-                      setValue={setQuantity}
-                      type={"number"}
-                      required={true}
-                    />
+                    <label className="text-sm font-medium">
+                      Enable Flavour & Weights
+                    </label>
                   </div>
-                  <div className="w-full grid grid-cols-2 lg:grid-cols-2 gap-2 my-2">
-                    <InputCompState
-                      label={"Price"}
-                      value={price}
-                      setValue={setPrice}
-                      type={"number"}
-                      required={true}
-                    />
-                    <InputCompState
-                      label={"Strike Price"}
-                      value={strikePrice}
-                      setValue={setStrikePrice}
-                      type={"number"}
-                      required={true}
-                    />
-                    {/* <InputCompState
-                      label={"Premium Price"}
-                      value={premiumPrice}
-                      setValue={setPremiumPrice}
-                      type={"number"}
-                      required={false}
-                    /> */}
-                  </div>
-                  {/* <div className="w-full flex items-start gap-4 ">
+
+                  {/* -------- Simple Variant (No Attributes) -------- */}
+                  {!useAttributes && (
+                    <div className="w-full grid grid-cols-2 gap-2">
+                      <InputCompState
+                        label="Name"
+                        value={variants}
+                        setValue={setVariants}
+                        required={true}
+                      />
+                      <InputCompState
+                        label="Price"
+                        value={price}
+                        setValue={setPrice}
+                        type="number"
+                        required={true}
+                      />
+                      <InputCompState
+                        label="Strike Price"
+                        value={strikePrice}
+                        setValue={setStrikePrice}
+                        type="number"
+                        required={true}
+                      />
+                      <InputCompState
+                        label="Quantity"
+                        value={quantity}
+                        setValue={setQuantity}
+                        type="number"
+                        required={true}
+                      />
+                    </div>
+                  )}
+
+                  {/* -------- Variant with Attributes (Flavour + Weights) -------- */}
+                  {useAttributes && (
+                    <>
+                      {/* Flavour + Weights */}
+                      <div className="w-full grid grid-cols-2 gap-4">
+                        <InputCompState
+                          label={"Flavour"}
+                          value={variants}
+                          setValue={setVariants}
+                          required={true}
+                        />
+                        <div>
+                          <label>
+                            Weights <span className="text-red-500">*</span>
+                          </label>
+                          <Multiselect
+                            options={weights}
+                            onSelect={handleWeightChange}
+                            onRemove={handleWeightChange}
+                            displayValue="label"
+                            placeholder="Select Weights"
+                            style={{
+                              chips: { fontSize: "12px" },
+                              multiselectContainer: { fontSize: "12px" },
+                              searchBox: {
+                                marginTop: "4px",
+                                fontSize: "12px",
+                                padding: "2px 8px",
+                              },
+                              option: { fontSize: "12px", padding: "3px 8px" },
+                              inputField: {
+                                fontSize: "12px",
+                                padding: "4px 8px",
+                                width: "100%",
+                              },
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Weights Pricing */}
+                      {weightsPricing.length > 0 && (
+                        <div className="w-full mt-4">
+                          <h3 className="text-sm font-semibold mb-2">
+                            Weights Pricing
+                          </h3>
+
+                          {/* Header */}
+                          <div className="grid grid-cols-4 gap-2 text-xs font-semibold mb-1">
+                            <span>Weight</span>
+                            <span>Price</span>
+                            <span>Strike Price</span>
+                            <span>Quantity</span>
+                          </div>
+
+                          {/* Rows */}
+                          {weightsPricing.map((row, index) => (
+                            <div
+                              key={row.weight}
+                              className="grid grid-cols-4 gap-2 mb-2"
+                            >
+                              <span className="flex items-center text-xs">
+                                {row.weight}
+                              </span>
+                              <input
+                                type="number"
+                                value={row.price}
+                                onChange={(e) =>
+                                  handlePricingChange(
+                                    index,
+                                    "price",
+                                    e.target.value
+                                  )
+                                }
+                                className="border p-1 text-xs rounded"
+                              />
+                              <input
+                                type="number"
+                                value={row.strike_price}
+                                onChange={(e) =>
+                                  handlePricingChange(
+                                    index,
+                                    "strike_price",
+                                    e.target.value
+                                  )
+                                }
+                                className="border p-1 text-xs rounded"
+                              />
+                              <input
+                                type="number"
+                                value={row.quantity}
+                                onChange={(e) =>
+                                  handlePricingChange(
+                                    index,
+                                    "quantity",
+                                    e.target.value
+                                  )
+                                }
+                                className="border p-1 text-xs rounded"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                {/* <div className="w-full flex items-start gap-4 ">
                   <div className="w-full ">
                     <ProductInputMedia
                       label={"Thumbnail"}
@@ -733,7 +920,6 @@ const AddProduct = () => {
                     </div>
                   </div>
                 </div> */}
-                </div>
 
                 {variantList?.length > 0 && (
                   <div className="w-full flex items-start justify-start">
@@ -741,34 +927,57 @@ const AddProduct = () => {
                       <THead>
                         <TR>
                           <TH size={"text-xs"}>Name</TH>
-                          <TH size={"text-xs"}>Quantity</TH>
-                          <TH size={"text-xs"}>Price</TH>
-                          <TH size={"text-xs"}>Strike Price</TH>
+                          {"quantity" in variantList[0] && (
+                            <TH size={"text-xs"}>Quantity</TH>
+                          )}
+                          {"price" in variantList[0] && (
+                            <TH size={"text-xs"}>Price</TH>
+                          )}
+                          {"strike_price" in variantList[0] && (
+                            <TH size={"text-xs"}>Strike Price</TH>
+                          )}
+                          {"primary" in variantList[0] && (
+                            <TH size={"text-xs"}>
+                              {variantList[0].primary?.name || "Primary"}
+                            </TH>
+                          )}
+                          {"secondary" in variantList[0] && (
+                            <TH size={"text-xs"}>
+                              {variantList[0].secondary?.name || "Secondary"}
+                            </TH>
+                          )}
                           <TH size={"text-xs"}></TH>
                         </TR>
                       </THead>
                       <TBody>
-                        {variantList?.map((data, i) => {
-                          return (
-                            <TR key={i}>
-                              <TD>{data?.name}</TD>
-                              <TD>{data?.quantity}</TD>
-                              <TD>
-                                {"₹"} {data?.price}
-                              </TD>
+                        {variantList?.map((data, i) => (
+                          <TR key={i}>
+                            {"primary" in data ? " - " : <TD>{data?.name}</TD>}
 
+                            {"quantity" in data && <TD>{data?.quantity}</TD>}
+                            {"price" in data && <TD>₹ {data?.price}</TD>}
+                            {"strike_price" in data && (
+                              <TD>₹ {data?.strike_price}</TD>
+                            )}
+                            {"primary" in data && (
+                              <TD>{data?.primary?.values?.value}</TD>
+                            )}
+                            {"secondary" in data && (
                               <TD>
-                                {"₹"} {data?.strike_price}
+                                {Array.isArray(data?.secondary?.values?.value)
+                                  ? data.secondary.values.value.join(", ")
+                                  : data?.secondary?.values?.value}
                               </TD>
-                              <TD className="flex items-center gap-2 justify-center">
-                                <AiFillDelete
-                                  className="text-red-500  cursor-pointer"
-                                  onClick={() => deleteVariantHandler(i)}
-                                />
-                              </TD>
-                            </TR>
-                          );
-                        })}
+                            )}
+
+                            <TD className="flex items-center gap-2 justify-center">
+                              <AiFillDelete
+                                className="text-red-500 cursor-pointer"
+                                onClick={() => deleteVariantHandler(i)}
+                              />
+                            </TD>
+                          </TR>
+                        ))}
                       </TBody>
                     </XTable>
                   </div>

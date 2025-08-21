@@ -41,6 +41,7 @@ import CartPayment from "./CartPayment";
 
 const Cart = () => {
   const snap = useSnapshot(webState);
+  
   const navigate = useNavigate();
   // const [isLoading, setIsLoading] = useState(true); // New state for managing loading
 

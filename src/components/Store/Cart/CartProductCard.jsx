@@ -73,15 +73,15 @@ const CartProductCard = ({ data }) => {
   const thumbnailUrl = data?.product?.thumbnail?.url;
   // console.log(data);
   return (
-    <div className="flex flex-col rounded-lg gap-3 overflow-hidden w-full capitalize px-2.5 lg:px-0 shadow-sm lg:h-[140px]">
+    <div className="flex flex-col rounded-lg gap-3 overflow-hidden w-full capitalize px-2.5 lg:px-0 shadow-sm lg:h-[160px] border">
       <div className="flex w-full gap-2 h-full">
         <div
           className="w-1/3 lg:w-1/6 h-full relative"
-          onClick={() => productDetailHandler(data?.product?.id)}
+          onClick={() => productDetailHandler(data?.ProductId)}
         >
           <img
             className="object-cover object-top w-full h-full lg:w-32 cursor-pointer"
-            src={thumbnailUrl}
+            src={data?.productData?.thumbnail?.url}
             width={"auto"}
             height={"auto"}
             alt="image"
@@ -114,7 +114,23 @@ const CartProductCard = ({ data }) => {
             <div className="flex flex-col gap-0.5">
               <div className="text-xs w-full lg:text-sm ">
                 <span className="w-full flex text-themebg-themecolor/70 text-sm font-medium leading-normal ">
-                  Variant :<span className="px-2">{data?.name}</span>
+                  Product Name :
+                  <span className="px-2">
+                    {data?.productData?.name}
+                  </span>
+                </span>
+              </div>
+              <div className="text-xs w-full lg:text-sm ">
+                <span className="w-full flex text-themebg-themecolor/70 text-sm font-medium leading-normal ">
+                  Variant :
+                  <span className="px-2">
+                    {data?.name}{" "}
+                    {data?.CartVariant?.selectedWeightId && (
+                      <span className="">
+                        ( {data?.CartVariant?.selectedWeight?.weight} )
+                      </span>
+                    )}
+                  </span>
                 </span>
               </div>
               <div className="text-xs w-full lg:text-sm ">
@@ -127,14 +143,15 @@ const CartProductCard = ({ data }) => {
               <span className="text-themebg-themecolor/70 text-sm font-medium leading-normal">
                 {"Price: ₹ "}
                 <span className="text-xs lg:text-sm">
-                  {Number(data?.price).toFixed(2)}
+                  { !data?.CartVariant?.selectedWeightId ? Number(data?.price).toFixed(2) :
+                    Number(data?.CartVariant?.selectedWeight?.price).toFixed(2)}
                 </span>
               </span>
 
               <span className="text-themebg-themecolor/70 text-base font-semibold leading-normal">
                 {"Total Price: ₹ "}
                 <span className="text-xs lg:text-sm">
-                  {Number(data?.price).toFixed(2) * data?.CartVariant?.quantity}
+                  { !data?.CartVariant?.selectedWeightId ? Number(data?.price).toFixed(2) * data?.CartVariant?.quantity : Number(data?.CartVariant?.selectedWeight?.price).toFixed(2) * data?.CartVariant?.quantity}
                 </span>
               </span>
               {data?.resellengPrice && (
@@ -146,7 +163,7 @@ const CartProductCard = ({ data }) => {
                 </span>
               )}
             </div>
-            
+
             {!data?.product?.cod_enabled && (
               <span className="inline-flex items-center max-h-max px-2.5 py-0.5 bg-red-100 text-red-800 rounded-full text-xs font-medium ">
                 COD Not Available

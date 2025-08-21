@@ -317,6 +317,7 @@ const Navbar = () => {
               activeSubmenu={activeSubmenu}
               handleRedirect={handleRedirect}
             />
+            <li className="text-navTextColor font-medium cursor-pointer"><Link to={"/blogs"}>Blogs</Link></li>
           </ul>
 
           <div className=" flex items-center justify-end  gap-2.5 ">

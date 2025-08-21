@@ -29,7 +29,6 @@ const CheckoutPayment = () => {
   const companyInfo = snap.brandInfo;
   const userInfo = snap?.userData?.data;
   const codAdvance = webState.codAdvancePrice;
-  // console.log(codAdvance);
 
   useEffect(() => {
     initiateCheckoutEvent();
@@ -48,6 +47,14 @@ const CheckoutPayment = () => {
       {
         VariantId: data?.selectedVariant?.id,
         quantity: data?.quantity,
+        selectedWeight: data?.selectedWeight
+          ? {
+              ...data.selectedWeight,
+              price: Number(data.selectedWeight.price),
+              strike_price: Number(data.selectedWeight.strike_price),
+              quantity: Number(data.selectedWeight.quantity),
+            }
+          : null,
       },
     ];
 

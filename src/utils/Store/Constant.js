@@ -3,6 +3,7 @@ import { getHandlerWithToken } from "./ApiCalls";
 import { axios } from "./Axios";
 import resizer from "./resizer";
 
+// export const IP = "http://localhost:7677";
 export const IP = "https://youngindianutrition.api.socialseller.in";
 
 export const baseURL = `${IP}/api`;

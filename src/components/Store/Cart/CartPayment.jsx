@@ -7,30 +7,35 @@ const CartPayment = () => {
   const snap = useSnapshot(webState);
   const value = snap.cartData?.Variants;
 
-  // console.log(snap.cartData?.Variants);
-  const totalPrice = snap.cartData?.Variants.reduce((accumulator, product) => {
-    return accumulator + product.price * product.CartVariant?.quantity;
-  }, 0); // Initial value of the accumulator is 0
+  // ✅ Calculate total price conditionally
+  const totalPrice =
+    value?.reduce((accumulator, product) => {
+      const quantity = product.CartVariant?.quantity || 0;
 
-  // console.log("Total Price:", totalPrice);
+      // Check if product has a selectedWeightId
+      if (product.CartVariant?.selectedWeightId && product.CartVariant?.selectedWeight) {
+        return (
+          accumulator +
+          parseFloat(product.CartVariant.selectedWeight.price || 0) * quantity
+        );
+      }
 
-  const data = value?.map((data) => data?.product);
-  // console.log(data);
+      // Fallback: use base product price
+      return accumulator + parseFloat(product.price || 0) * quantity;
+    }, 0) || 0;
 
-  // useEffect(() => {
-  //   console.log(snap.cartData?.map((data) => console.log(data)));
-  // }, [snap.cartData]);
+  // ✅ Coupon / discounts
+  const totalDiscountedPrice =
+    value?.reduce((total, product) => total + (product.discountedPrice || 0), 0) || 0;
 
-  const totalDiscountedPrice = value?.reduce((total, product) => {
-    return total + (product.discountedPrice || 0);
-  }, 0);
-  // console.log(totalDiscountedPrice);
+  // ✅ Shipping calculation
+  const data = value?.map((data) => data?.product).filter(Boolean);
 
   const calculatePrices = (data) => {
     return data?.reduce(
       (acc, object) => {
         const { shipping_value_type, shipping_value } = object;
-        const parsedShippingPrice = parseFloat(shipping_value);
+        const parsedShippingPrice = parseFloat(shipping_value || 0);
         if (shipping_value_type === "SHIPPING_PERCENTAGE") {
           acc.deliveryPrice += (totalPrice * parsedShippingPrice) / 100;
         } else {
@@ -38,13 +43,11 @@ const CartPayment = () => {
         }
         return acc;
       },
-      {
-        deliveryPrice: 0,
-        originalTotalPrice: 0,
-      }
+      { deliveryPrice: 0, originalTotalPrice: 0 }
     );
   };
 
+  // ✅ COD advance calculation
   const calculateCodAdvance = (totalPrice, codPrepaidType, codPrepaid) => {
     return codPrepaidType === "PERCENTAGE"
       ? (totalPrice * codPrepaid) / 100
@@ -57,7 +60,6 @@ const CartPayment = () => {
     snap?.globalData?.data?.cod_prepaid
   );
 
-  // console.log(codAdvancePrice);
   webState.codAdvancePrice = codAdvancePrice;
 
   const { deliveryPrice } = calculatePrices(data);
@@ -66,7 +68,7 @@ const CartPayment = () => {
     <Container>
       <div className="flex flex-col items-center ">
         <div className="w-full flex items-center justify-center flex-col mx-auto gap-3">
-          <div className="w-full flex items-center justify-between  text-neutral-800 text-opacity-70 font-normal leading-normal">
+          <div className="w-full flex items-center justify-between text-neutral-800 text-opacity-70 font-normal leading-normal">
             <span className="text-base lg:text-sm">Product Amount</span>
             <span className="text-base xl:text-sm">
               ₹ {totalPrice?.toFixed(2)}
@@ -74,7 +76,7 @@ const CartPayment = () => {
           </div>
 
           <div className="w-full flex items-center justify-between text-neutral-800 text-opacity-70 font-normal leading-normal">
-            <span className="text-base lg:text-sm">Devliery Charge</span>
+            <span className="text-base lg:text-sm">Delivery Charge</span>
             <span className="text-base lg:text-sm">
               {deliveryPrice ? "₹ " + deliveryPrice.toFixed(2) : "Free"}
             </span>
@@ -85,10 +87,7 @@ const CartPayment = () => {
             <div className="w-full flex items-center justify-between text-neutral-800 text-opacity-70 font-normal leading-normal">
               <span className="text-base lg:text-sm">COD Advance</span>
               <span className="text-base lg:text-sm">
-                ₹{" "}
-                {snap?.globalData?.data?.cod_prepaid
-                  ? codAdvancePrice?.toFixed(2)
-                  : "Free"}
+                ₹ {codAdvancePrice?.toFixed(2)}
               </span>
             </div>
           ) : null}
@@ -97,7 +96,6 @@ const CartPayment = () => {
             <div className="w-full flex items-center justify-between text-green-600 leading-normal">
               <span className="text-base lg:text-sm">Coupon Discount</span>
               <span className="text-base lg:text-sm">
-                {" "}
                 - ₹ {totalDiscountedPrice?.toFixed(2)}
               </span>
             </div>
@@ -107,8 +105,7 @@ const CartPayment = () => {
           <div className="w-full flex items-center justify-between font-bold leading-normal text-black">
             <span>Total</span>
             <span>
-              ₹{" "}
-              {(totalPrice + deliveryPrice - totalDiscountedPrice)?.toFixed(2)}
+              ₹ {(totalPrice + deliveryPrice - totalDiscountedPrice)?.toFixed(2)}
             </span>
           </div>
         </div>
@@ -116,5 +113,6 @@ const CartPayment = () => {
     </Container>
   );
 };
+
 
 export default CartPayment;

@@ -20,7 +20,7 @@ const PaymentSlip = ({ data }) => {
               Product Amount{" "}
             </span>
             <span className="text-[#333333] text-xs font-normal">
-              ₹ {orderPrice}
+              ₹ {!data?.selectedWeightId ? orderPrice : data?.selectedWeight?.price}
             </span>
           </div>
           <div className="w-full flex items-center justify-between ">
@@ -36,7 +36,7 @@ const PaymentSlip = ({ data }) => {
               Discounted Price
             </span>
             <span className="text-[#333333] text-xs  font-normal">
-              ₹ {paidAmount}
+              ₹ {paidAmount || 0}
             </span>
           </div>
 

@@ -39,6 +39,11 @@ const Details = ({ rating, productDetail }) => {
   const [bulkPData, setBulkPData] = useState(
     productDetail?.variants[0]?.bulk_pricings
   );
+  const [selectedFlavour, setselectedFlavour] = useState(null);
+  const [selectedSize, setSelectedSize] = useState(null);
+  // const variantName = selectedVariant?.primary_attribute?.value
+  // || selectedVariant?.name
+  // || productDetail?.variants?.[0]?.name;
 
   const [showResellerInput, setShowReselerInput] = useState(false);
   const [resellengPrice, setResellingPrice] = useState("");
@@ -80,10 +85,69 @@ const Details = ({ rating, productDetail }) => {
     },
     [userInfo]
   );
-
   useEffect(() => {
-    variantHandler(productDetail?.variants[0]);
-  }, [userInfo, productDetail, variantHandler]);
+    if (!productDetail?.variants?.length) return;
+
+    // Pick a default variant: prefer one with primary_attribute, else fallback
+    const defaultVariant =
+      productDetail.variants.find((v) => v.primary_attribute) ||
+      productDetail.variants[0];
+
+    setVariantDetails(defaultVariant);
+    setSelectedVariant(defaultVariant);
+
+    const firstFlavour = defaultVariant.primary_attribute?.value || null;
+    const firstSize = defaultVariant.secondary_attribute?.value?.[0] || null;
+
+    setselectedFlavour(firstFlavour);
+    setSelectedSize(firstSize);
+
+    // If there's a size & flavour, use size pricing; else fallback to variant price
+    if (firstFlavour && firstSize) {
+      handleSizeSelection(firstSize, firstFlavour);
+    } else {
+      // fallback for variants with no attributes
+      setPrice(
+        userInfo?.isPremium && defaultVariant?.premium_price
+          ? defaultVariant.premium_price
+          : defaultVariant.price
+      );
+      setProdPrice(
+        userInfo?.isPremium && defaultVariant?.premium_price
+          ? defaultVariant.premium_price
+          : defaultVariant.price
+      );
+      setStrikePrice(defaultVariant.strike_price);
+      setPremiumPrice(defaultVariant.premium_price);
+    }
+
+    // show bulk pricing if exists
+    setBulkPData(defaultVariant?.bulk_pricings);
+    setShowBulkPrice(!!defaultVariant?.bulk_pricings?.length);
+  }, [userInfo, productDetail]);
+
+  // useEffect(() => {
+  //   if (!productDetail?.variants?.length) return;
+
+  //   const defaultVariant =
+  //     productDetail.variants.find((v) => v.primary_attribute) ||
+  //     productDetail.variants[0];
+
+  //   const firstFlavour = defaultVariant.primary_attribute?.value;
+  //   const firstSize = defaultVariant.secondary_attribute?.value?.[0];
+
+  //   if (firstFlavour && firstSize) {
+  //     setselectedFlavour(firstFlavour);
+  //     setSelectedSize(firstSize);
+
+  //     // ✅ this ensures price comes from weights_pricing on first load
+  //     handleSizeSelection(firstSize, firstFlavour);
+  //   }
+  // }, [userInfo, productDetail]);
+
+  // useEffect(() => {
+  // variantHandler(productDetail?.variants[0]);
+  // }, [userInfo, productDetail, variantHandler]);
 
   const updateProdPriceByQuantity = useCallback(() => {
     if (bulkPData?.length > 0) {
@@ -153,6 +217,52 @@ const Details = ({ rating, productDetail }) => {
     }
   }, []);
 
+  const handleSizeSelection = (size, flavour) => {
+    const variant = productDetail?.variants?.find(
+      (v) => v.primary_attribute?.value === flavour
+    );
+
+    if (!variant) return;
+
+    // Try to match weight pricing
+    const selectedWeightPricing = variant.weights_pricing?.find(
+      (w) => w.weight === size
+    );
+
+    if (selectedWeightPricing) {
+      setProdPrice(
+        userInfo?.isPremium && selectedWeightPricing?.premium_price
+          ? selectedWeightPricing.premium_price
+          : selectedWeightPricing.price
+      );
+      setStrikePrice(selectedWeightPricing.strike_price);
+      setPremiumPrice(selectedWeightPricing.premium_price);
+      const updatedVariant = {
+        ...variant,
+        selectedWeight: selectedWeightPricing,
+      };
+
+      setVariantDetails(updatedVariant);
+      setSelectedVariant(updatedVariant);
+    } else {
+      // fallback to base variant
+      setProdPrice(
+        userInfo?.isPremium && variant?.premium_price
+          ? variant.premium_price
+          : variant.price
+      );
+      setStrikePrice(variant.strike_price);
+      setPremiumPrice(variant.premium_price);
+      setVariantDetails(variant);
+      setSelectedVariant(variant);
+    }
+
+    setSelectedSize(size);
+  };
+  // console.log("Selected Variant", selectedVariant);
+  // console.log("selectedFlavour", selectedFlavour);
+  // console.log("SelctedWeights", selectedVariant?.selectedWeight);
+
   const handleProductAction = useCallback(
     async (
       actionType, // "addtocart" or "buynow"
@@ -169,24 +279,29 @@ const Details = ({ rating, productDetail }) => {
       cod,
       coupon
     ) => {
-      if (selectedVariant?.quantity > 0) {
+      if (
+        selectedVariant?.quantity > 0 ||
+        selectedVariant?.primary_attribute !== null
+      ) {
         const data = {
           productId,
           productName,
           thumbnail,
           quantity,
           variName,
-          prodPrice,
+          prodPrice: Number(prodPrice),
           shippingPrice: shippingPrice || 0,
           shipping_type: shipping,
           resellengPrice,
           selectedVariant,
+          selectedWeight: selectedVariant?.selectedWeight || null, // ✅ include selected weight
+          selectedFlavour: selectedFlavour || null,
           cod,
           coupon,
           isResellerOrder: showResellerInput,
         };
 
-        // console.log(data);
+        console.log("Buy Now Data:", data);
 
         if (actionType === "addtocart") {
           // webState.purhcaseType = "addtocart";
@@ -196,6 +311,7 @@ const Details = ({ rating, productDetail }) => {
           const cartData = {
             VariantId: selectedVariant?.id,
             quantity: +quantity,
+            selectedWeightId: selectedVariant?.selectedWeight?.id || null,
           };
 
           if (snap.loggedinUserData) {
@@ -333,7 +449,7 @@ const Details = ({ rating, productDetail }) => {
         {/* Name, Price & Rating */}
         <PricingSection
           data={productDetail}
-          prodPrice={prodPrice}
+          prodPrice={prodPrice ?? (productDetail?.variants?.[0]?.price || 0)}
           strikePrice={strikePrice}
           finalDifference={finalDifference}
           premiumPrice={premiumPrice}
@@ -349,7 +465,57 @@ const Details = ({ rating, productDetail }) => {
           rating={rating}
         />
         {/* <ProductDetailContainer> */}
-        {productDetail?.variants?.length > 0 ? (
+        {/* {productDetail?.variants?.length > 0 ? (
+          <>
+          </>
+        ) : null} */}
+
+        {productDetail?.variants?.some((v) => v.primary_attribute) ? (
+          <div className="flex flex-col mt-3">
+            <div className="text-neutral-800 text-sm lg:text-base font-semibold leading-tight">
+              Flavolur{" "}
+              <span className="text-sm">
+                {selectedFlavour ? `: (${selectedFlavour})` : ""}
+              </span>
+            </div>
+            <div className="flex gap-3 flex-wrap mt-1">
+              {[
+                ...new Map(
+                  productDetail.variants
+                    .filter((v) => v.primary_attribute)
+                    .map((v) => [v.primary_attribute?.value, v])
+                ).values(),
+              ].map((variant) => (
+                <div
+                  key={variant?.id}
+                  onClick={() => {
+                    const flavour = variant.primary_attribute.value;
+                    const defaultSize = variant.secondary_attribute.value[0];
+
+                    setselectedFlavour(flavour);
+                    setSelectedSize(defaultSize);
+                    handleSizeSelection(defaultSize, flavour); // ✅ Pass fresh values
+                  }}
+                  className={`rounded-md border px-4 py-2  cursor-pointer  flex items-center justify-center hover:bg-themecolor hover:text-white  ${
+                    selectedFlavour === variant.primary_attribute.value
+                      ? "bg-black text-white"
+                      : ""
+                  }`}
+                >
+                  <div
+                    className="text-center text-xs font-normal leading-normal "
+                    style={{
+                      backgroundColor: variant?.primary_attribute?.hex_code,
+                    }}
+                  >
+                    {" "}
+                    {variant.primary_attribute.value}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
           <>
             <div className="mt-3 text-gray-600 text-sm lg:text-xs font-medium leading-tight">
               Variants
@@ -367,7 +533,45 @@ const Details = ({ rating, productDetail }) => {
               })}
             </div>
           </>
-        ) : null}
+        )}
+
+        {selectedFlavour &&
+          (() => {
+            const filteredVariants = productDetail.variants?.filter(
+              (v) => v.primary_attribute?.value === selectedFlavour
+            );
+
+            const sizes = filteredVariants
+              .map((v) => v.secondary_attribute?.value)
+              .flat()
+              .filter(Boolean);
+
+            return sizes.length > 0 ? (
+              <div className="flex flex-col mt-3">
+                <div className="text-neutral-800 text-sm lg:text-base font-semibold leading-tight">
+                  Weights{" "}
+                  <span className="text-sm">
+                    {selectedSize ? `: (${selectedSize})` : ""}
+                  </span>
+                </div>
+                <div className="flex gap-3 flex-wrap mt-1">
+                  {sizes.map((size, index) => (
+                    <span
+                      key={index}
+                      onClick={() => handleSizeSelection(size, selectedFlavour)}
+                      className={`rounded-md border px-4 border-gray-300 cursor-pointer px-2 py-2 flex items-center justify-center ${
+                        selectedSize === size ? "bg-black text-white" : ""
+                      }`}
+                    >
+                      <span className="text-center text-xs font-normal leading-normal">
+                        {size}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ) : null;
+          })()}
 
         {/* BULK QUANTITY PRICING */}
         {showBulkPrice && bulkPData?.length > 0 && (

@@ -4,14 +4,17 @@ import { createBulkPrice, createVariant } from "../../../utils/productsAPI";
 import { useSnapshot } from "valtio";
 import { SuccessAlert } from "../../Toast";
 import SimpleModal from "../Modals/SimpleModal";
+import Multiselect from "multiselect-react-dropdown";
 // import ProductInputMedia from "../UI/Inputs/ProductInputMedia";
 // import { resizeFile, uploadImage } from "../../../utils/const_API";
 
 const CreateVariantModal = () => {
   let snap = useSnapshot(state);
   let id = snap.selectedVariantID;
+  console.log("id: ---", id);
 
   const [createdVariantID, setCreatedVariantID] = useState("");
+  const [useAttributes, setUseAttributes] = useState(false);
 
   // const [addBulkPrice, setAddBulkPrice] = useState(false);
   // const [variantThumbnail, setVariantThumbnail] = useState(null);
@@ -20,15 +23,47 @@ const CreateVariantModal = () => {
 
   let [vData, setvData] = useState({
     name: "",
+    flavour: "",
+    weights: null,
     price: null,
     strike_price: null,
     premium_price: null,
     quantity: null,
     ProductId: id,
   });
-
+  const weights = [
+    { label: "500gm", value: "500gm" },
+    { label: "1kg", value: "1kg" },
+    { label: "2kg", value: "2kg" },
+    { label: "3kg", value: "3kg" },
+    { label: "4kg", value: "4kg" },
+    { label: "5kg", value: "5kg" },
+  ];
+  const [selectedWeights, setSelectedWeights] = useState([]);
+  const [weightsPricing, setWeightsPricing] = useState([]);
   const [bulk_pricings] = useState([]);
 
+  const handleWeightChange = (selectedList) => {
+    const newWeights = selectedList.map((item) => item.value);
+    setSelectedWeights(newWeights);
+
+    // Initialize / preserve pricing per weight
+    setWeightsPricing((prev) => {
+      return newWeights.map((w) => {
+        const existing = prev.find((p) => p.weight === w);
+        return (
+          existing || {
+            weight: w,
+            price: "",
+            strike_price: "",
+            quantity: "",
+            booking_price: null,
+            premium_price: null,
+          }
+        );
+      });
+    });
+  };
   // const [from, setFrom] = useState(null);
   // const [to, setTo] = useState(null);
   // const [price, setPrice] = useState(null);
@@ -66,14 +101,57 @@ const CreateVariantModal = () => {
   const createVariantHandler = async () => {
     closeModalHandler();
 
+    // let finalData = {
+    //   ProductId: vData.ProductId,
+    //   name: vData.flavour,
+    //   premium_price: Number(vData.price),
+    //   price: Number(vData.price),
+    //   quantity: Number(vData.quantity),
+    //   strike_price: Number(vData.strike_price),
+    // };
+
     let finalData = {
       ProductId: vData.ProductId,
-      name: vData.name,
-      premium_price: Number(vData.price),
-      price: Number(vData.price),
-      quantity: Number(vData.quantity),
-      strike_price: Number(vData.strike_price),
+      // ThumbnailId: vData.ThumbnailId || null,
+      // gallery: vData.gallery || [],
+
+      // Attributes
+      primary: useAttributes
+        ? {
+            name: "Flavour",
+            values: {
+              value: vData.flavour || null,
+              hex_code: "",
+            },
+          }
+        : undefined,
+
+      secondary: useAttributes
+        ? {
+            name: "Weights",
+            values: {
+              value: selectedWeights || [],
+              hex_code: "",
+            },
+          }
+        : undefined,
+
+      weights_pricing: useAttributes ? weightsPricing : [],
     };
+
+    // Conditionally add name/price/strike/quantity only when attributes are OFF
+    if (!useAttributes) {
+      Object.assign(finalData, {
+        name: vData.name,
+        price: Number(vData.price || 0),
+        strike_price: Number(vData.strike_price || 0),
+        premium_price: Number(vData.premium_price || 0),
+        quantity: Number(vData.quantity || 0),
+      });
+    }
+
+    console.log(finalData);
+
     // if (variantThumbnail !== null) {
     //   let formdata = new FormData();
     //   formdata.append("file", variantThumbnail);
@@ -133,60 +211,172 @@ const CreateVariantModal = () => {
   const closeModalHandler = () => {
     state.createVariantModal = false;
   };
+  const handlePricingChange = (index, field, value) => {
+    const newPricing = [...weightsPricing];
+    newPricing[index][field] = value;
+    setWeightsPricing(newPricing);
+  };
 
   return (
     <SimpleModal modalSize={"max-w-3xl"} closeModalHandler={closeModalHandler}>
       <div className="p-6">
-        <div className="flex items-center gap-2 pb-2">
-          <div className="w-full">
-            <label htmlFor="">Name</label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-2">
+          {/* Toggle */}
+          <div className="md:col-span-2 flex items-center space-x-2 mb-2">
             <input
-              className=" text-xs border-gray-200"
-              type="text"
-              placeholder="Name"
-              onChange={(e) => setvData({ ...vData, name: e.target.value })}
+              type="checkbox"
+              checked={useAttributes}
+              onChange={(e) => setUseAttributes(e.target.checked)}
             />
+            <label className="text-sm font-medium">
+              Enable Flavour & Weights
+            </label>
           </div>
-          <div className="w-full">
-            <label htmlFor="">Price</label>
-            <input
-              className=" text-xs border-gray-200"
-              type="text"
-              placeholder="Price"
-              onChange={(e) => setvData({ ...vData, price: e.target.value })}
-            />
-          </div>
-          <div className="w-full">
-            <label htmlFor="">Strike Price</label>
-            <input
-              className=" text-xs border-gray-200"
-              type="text"
-              placeholder="strike price"
-              onChange={(e) =>
-                setvData({ ...vData, strike_price: e.target.value })
-              }
-            />
-          </div>
-          {/* <div className="w-full">
-            <label htmlFor="">Premium Price</label>
-            <input
-              className=" text-xs border-gray-200"
-              type="text"
-              placeholder="premium price"
-              onChange={(e) =>
-                setvData({ ...vData, premium_price: e.target.value })
-              }
-            />
-          </div> */}
-          <div className="w-full">
-            <label htmlFor="">Quantity</label>
-            <input
-              className=" text-xs border-gray-200"
-              type="text"
-              placeholder="Qunatity"
-              onChange={(e) => setvData({ ...vData, quantity: e.target.value })}
-            />
-          </div>
+
+          {/* -------- Simple Variant (No Attributes) -------- */}
+          {!useAttributes && (
+            <>
+              {/* Name */}
+              <div>
+                <label className="block text-sm font-medium">Name</label>
+                <input
+                  className="w-full border border-gray-200 rounded text-sm p-2"
+                  type="text"
+                  placeholder="Name"
+                  onChange={(e) => setvData({ ...vData, name: e.target.value })}
+                />
+              </div>
+
+              {/* Price */}
+              <div>
+                <label className="block text-sm font-medium">Price</label>
+                <input
+                  className="w-full border border-gray-200 rounded text-sm p-2"
+                  type="number"
+                  placeholder="Price"
+                  min="0"
+                  onChange={(e) =>
+                    setvData({ ...vData, price: e.target.value })
+                  }
+                />
+              </div>
+
+              {/* Strike Price */}
+              <div>
+                <label className="block text-sm font-medium">
+                  Strike Price
+                </label>
+                <input
+                  className="w-full border border-gray-200 rounded text-sm p-2"
+                  type="number"
+                  placeholder="Strike Price"
+                  min="0"
+                  onChange={(e) =>
+                    setvData({ ...vData, strike_price: e.target.value })
+                  }
+                />
+              </div>
+
+              {/* Quantity */}
+              <div>
+                <label className="block text-sm font-medium">Quantity</label>
+                <input
+                  className="w-full border border-gray-200 rounded text-sm p-2"
+                  type="number"
+                  placeholder="Quantity"
+                  min="0"
+                  onChange={(e) =>
+                    setvData({ ...vData, quantity: e.target.value })
+                  }
+                />
+              </div>
+            </>
+          )}
+
+          {/* -------- Variant with Attributes (Flavour + Weights) -------- */}
+          {useAttributes && (
+            <>
+              {/* Flavour */}
+              <div>
+                <label className="block text-sm font-medium">Flavour</label>
+                <input
+                  className="w-full border border-gray-200 rounded text-sm p-2"
+                  type="text"
+                  placeholder="Flavour"
+                  onChange={(e) =>
+                    setvData({ ...vData, flavour: e.target.value })
+                  }
+                />
+              </div>
+
+              {/* Weights */}
+              <div>
+                <label className="block text-sm font-medium">Weights</label>
+                <Multiselect
+                  options={weights}
+                  onSelect={handleWeightChange}
+                  onRemove={handleWeightChange}
+                  displayValue="label"
+                  placeholder="Select Weights"
+                  style={{
+                    chips: { fontSize: "12px" },
+                    multiselectContainer: { fontSize: "12px" },
+                    searchBox: { fontSize: "12px", padding: "2px 8px" },
+                    option: { fontSize: "12px", padding: "3px 8px" },
+                    inputField: {
+                      fontSize: "12px",
+                      padding: "3px 8px",
+                      width: "100%",
+                    },
+                  }}
+                />
+              </div>
+            </>
+          )}
+
+          {/* -------- Weights Pricing -------- */}
+          {useAttributes && weightsPricing.length > 0 && (
+            <div className="md:col-span-2 w-full mt-4">
+              <h3 className="text-sm font-semibold mb-2">Weights Pricing</h3>
+              <div className="grid grid-cols-4 gap-2 text-xs font-semibold mb-1">
+                <span>Weight</span>
+                <span>Price</span>
+                <span>Strike Price</span>
+                <span>Quantity</span>
+              </div>
+              {weightsPricing.map((row, index) => (
+                <div key={row.weight} className="grid grid-cols-4 gap-2 mb-2">
+                  <span className="flex items-center text-xs">
+                    {row.weight}
+                  </span>
+                  <input
+                    type="number"
+                    value={row.price}
+                    onChange={(e) =>
+                      handlePricingChange(index, "price", e.target.value)
+                    }
+                    className="border p-1 text-xs rounded"
+                  />
+                  <input
+                    type="number"
+                    value={row.strike_price}
+                    onChange={(e) =>
+                      handlePricingChange(index, "strike_price", e.target.value)
+                    }
+                    className="border p-1 text-xs rounded"
+                  />
+                  <input
+                    type="number"
+                    value={row.quantity}
+                    onChange={(e) =>
+                      handlePricingChange(index, "quantity", e.target.value)
+                    }
+                    className="border p-1 text-xs rounded"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* <div className="w-full flex items-start gap-4 ">
