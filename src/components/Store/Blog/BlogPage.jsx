@@ -9,7 +9,7 @@ const BlogPage = () => {
   const { id } = useParams();
   
   const [blog, setBlog] = useState(null);
-  const subdomain = window?.location?.hostname?.split(".")[0];
+  const subdomain = window?.location?.hostname?.split(".")[1];
   const isBlogSubdomain = subdomain === "dashboard";
 
   useEffect(() => {
