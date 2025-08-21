@@ -99,6 +99,9 @@ import CourseDetails from "./components/Admin/Course/CourseDetail/CourseDetail.j
 import Academy from "./components/Admin/Course/academy/Academy.jsx";
 import Supplier from "./components/Admin/supplier/Supplier.jsx";
 import SupplierDetail from "./components/Admin/supplier/SupplierDetail.jsx";
+import BlogsListing from "./components/Store/Blog/BlogsListing.jsx";
+import BlogPage from "./components/Store/Blog/BlogPage.jsx";
+import CreateBlog from "./components/Store/Blog/CreateBlog.jsx";
 const PaymentSuccess = lazy(() => import("./Pages/Store/PaymentSuccess.jsx"));
 const Wishlist = lazy(() => import("./components/Store/Wishlist.jsx/Wishlist"));
 
@@ -210,6 +213,10 @@ function App() {
       <Route path="campaign&Group" element={<Social />} />
       <Route path="groups" element={<GroupList />} />
       <Route path="settings" element={<Settings />} />
+       <Route path="/blogs" element={<BlogsListing />} />
+      <Route path="/blog/:title/:id" element={<BlogPage />} />
+      <Route path="/create" element={<CreateBlog />} />
+      <Route path="/blog/:id/edit" element={<CreateBlog />} />
     </Route>
   );
 
@@ -220,6 +227,8 @@ function App() {
       {/* <Route path="blog/:id" element={<Blog />} /> */}
       <Route path="search/:query" element={<Search />} />
       <Route path="product/:id" element={<StoreProductDetails />} />
+      <Route path="/blogs" element={<BlogsListing />} />
+      <Route path="/blog/:title/:id" element={<BlogPage />} />
       <Route path="cart" element={<Cart />} />
       <Route path="wishlist" element={<Wishlist />} />
       <Route path="category/:id" element={<CategoryProducts />} />

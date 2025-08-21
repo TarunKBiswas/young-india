@@ -481,7 +481,7 @@ const EditProductForm = ({
                 </div>
                 {shipping !== "FREE_SHIPPING" ? (
                   <div className="w-full flex flex-col gap-0.5">
-                    <label >Shipping Price</label>
+                    <label>Shipping Price</label>
                     <input
                       className="formInput"
                       type="number"
@@ -595,34 +595,56 @@ const EditProductForm = ({
                 {prevVariantList?.map((variant) => {
                   return (
                     <div
-                      className="w-full flex items-center gap-2"
+                      className="w-full flex items-center gap-2 mt-1"
                       key={variant.id}
                     >
-                      <DisabledInput
-                        size={"w-full flex flex-col gap-0.5 py-3"}
-                        label={"Name"}
-                        require={true}
-                        value={variant?.name}
-                      />
-                      <DisabledInput
-                        size={"w-full flex flex-col gap-0.5 py-3"}
-                        label={"Quantity"}
-                        require={true}
-                        value={variant?.quantity}
-                      />
-                      <DisabledInput
-                        size={"w-full flex flex-col gap-0.5 py-3"}
-                        label={"Price"}
-                        require={true}
-                        value={variant?.price}
-                      />
-                      <DisabledInput
-                        size={"w-full flex flex-col gap-0.5 py-3"}
-                        label={"Strike Price"}
-                        require={true}
-                        value={variant?.strike_price}
-                      />
+                      {/* Case 1: Flavour & Weights exist */}
+                      {variant?.primary_attribute?.value ? (
+                        <>
+                          <DisabledInput
+                            size="w-full flex flex-col gap-0.5 py-3"
+                            label="Flavour"
+                            require={true}
+                            value={variant?.primary_attribute?.value ?? "-"}
+                          />
+                          <DisabledInput
+                            size="w-full flex flex-col gap-0.5 py-3"
+                            label="Weights"
+                            require={true}
+                            value={variant?.secondary_attribute?.value ?? "-"}
+                          />
+                        </>
+                      ) : (
+                        /* Case 2: No flavour/weights, show name + price info */
+                        <>
+                          <DisabledInput
+                            size="w-full flex flex-col gap-0.5 py-3"
+                            label="Name"
+                            require={true}
+                            value={variant?.name ?? "-"}
+                          />
+                          <DisabledInput
+                            size="w-full flex flex-col gap-0.5 py-3"
+                            label="Quantity"
+                            require={true}
+                            value={variant?.quantity ?? "-"}
+                          />
+                          <DisabledInput
+                            size="w-full flex flex-col gap-0.5 py-3"
+                            label="Price"
+                            require={true}
+                            value={variant?.price ?? "-"}
+                          />
+                          <DisabledInput
+                            size="w-full flex flex-col gap-0.5 py-3"
+                            label="Strike Price"
+                            require={true}
+                            value={variant?.strike_price ?? "-"}
+                          />
+                        </>
+                      )}
 
+                      {/* Edit / Delete icons (always visible) */}
                       <div className="h-full flex items-center gap-2 pt-4">
                         <BsPencil
                           className="h-4 w-4 hover:scale-90 transition-all duration-300 cursor-pointer"

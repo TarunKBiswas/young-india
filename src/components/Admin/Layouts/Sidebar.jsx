@@ -78,6 +78,39 @@ const Sidebar = ({ showSidebar }) => {
                     </Link>
                   </div>
                 ))}
+                <div
+    className={`text-white text-sm hover:bg-blue-950 duration-300 ${
+      activeRoute === "/blogs"
+        ? "bg-blue-950 font-semibold"
+        : ""
+    } hover:text-white`}
+  >
+    <Link
+      to="/blogs"
+      className="p-2.5 mt-0.5 flex items-center px-4 transition-all duration-1000 cursor-pointer"
+      onClick={() => handleClick("/blogs")}
+    >
+      {/* Example icon from Heroicons */}
+      <svg
+        className="text-[#3970e7] font-bold h-6 w-6"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h10l6 6v10a2 2 0 01-2 2z" />
+      </svg>
+      <div className="w-full flex items-center justify-between">
+        <span
+          className={`text-sm ml-3 text-white font-medium ${
+            snap.hideSideBarName ? "hidden" : "block"
+          }`}
+        >
+          Blogs
+        </span>
+      </div>
+    </Link>
+  </div>
               </nav>
             </div>
             {/* Fixed Logout Button */}

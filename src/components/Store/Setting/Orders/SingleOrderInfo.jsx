@@ -11,6 +11,7 @@ import { FailureAlert, SuccessAlert } from "../../../Toast";
 import { useState } from "react";
 import { cancelOrder } from "../../../../utils/Store/Setting";
 import DeleteModalLayout from "../../../Admin/Modals/DeleteModalLayout";
+import { invoiceOrder } from "../../../../utils/Orders";
 
 const Singledata = ({ singleInfo, setSingleInfo }) => {
   const [showCancelOrder, setShowCancelOrder] = useState(false);
@@ -65,6 +66,28 @@ const Singledata = ({ singleInfo, setSingleInfo }) => {
     }
   };
 
+  const handleInvoice = async (data) => {
+    let id = data?.OrderId;
+
+    try {
+      const res = await invoiceOrder(id);
+      if (res?.status === 200) {
+        SuccessAlert("Invoice downloaded successfully!");
+        const url = window.URL.createObjectURL(
+          new Blob([res.data], { type: "application/pdf" })
+        );
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", "invoice.pdf");
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }
+    } catch (error) {
+      console.error("Error generating invoice:", error);
+    }
+  };
+
   const addReviewModal = (id) => {
     console.log(id);
     webState.selectedID = id;
@@ -73,7 +96,7 @@ const Singledata = ({ singleInfo, setSingleInfo }) => {
 
   return (
     <div className="flex flex-col gap-2 w-full px-2  ">
-      <div className="w-full border-b py-1.5 lg:py-3 flex gap-1.5 items-center ">
+      <div className="w-full border-b py-1.5 lg:py-3 flex gap-1.5 justify-between ">
         <span
           className="text-sm flex items-center gap-0.5 lg:text-base  cursor-pointer"
           onClick={() => setSingleInfo(!singleInfo)}
@@ -81,12 +104,18 @@ const Singledata = ({ singleInfo, setSingleInfo }) => {
           <AiOutlineLeft />
           Back to orders
         </span>
+        <button
+          onClick={() => handleInvoice(data)}
+          className="flex px-3 py-2 rounded justify-center bg-themecolor/5 border items-center gap-1.5  cursor-pointer text-center text-neutral-800 text-xs uppercase leading-tight tracking-wide"
+        >
+          Invoice
+        </button>
       </div>
       <div className="w-full flex items-center justify-between  ">
         <span className="text-xs lg:text-sm text-[#222222]/70">
           ORDER ID
           <span className="text-xs text-themecolor lg:text-sm px-1">
-            #{data?.order?.slug}
+            #{data?.order?.slug || data?.OrderId}
           </span>
         </span>
         <span className="text-xs lg:text-sm text-[#222222]/70">
@@ -119,11 +148,26 @@ const Singledata = ({ singleInfo, setSingleInfo }) => {
               <h1 className="text-sm lg:text-base font-normal leading-normal text-themecolor">
                 {data?.variant?.product?.name}
               </h1>
+              {data.selectedWeightId === null ? (
+                <span className="text-themecolor text-xs  lg:text-sm font-normal leading-normal  ">
+                  Variant : {data?.variant?.name}
+                </span>
+              ) : (
+                <>
+                  <span className="text-themecolor text-xs  lg:text-sm font-normal leading-normal  ">
+                    Flavour :{" "}
+                    {data?.variant.primary_attribute?.value || "No Flavour"}
+                  </span>
+                  <span className="text-themecolor text-xs  lg:text-sm font-normal leading-normal  ">
+                    Weight : {data?.selectedWeight.weight || "No Weight"}
+                  </span>
+                </>
+              )}
               <span className="text-themecolor text-xs lg:text-sm font-normal leading-normal">
-                Variant : {data?.variant?.name}
-              </span>
-              <span className="text-themecolor text-xs lg:text-sm font-normal leading-normal">
-                Price : {data?.variant?.price}
+                Price : ₹{" "}
+                {data?.selectedWeightId === null
+                  ? data?.variant?.price
+                  : data?.selectedWeight.price}
               </span>
             </div>
           </div>

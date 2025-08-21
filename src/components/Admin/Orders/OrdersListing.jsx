@@ -202,7 +202,21 @@ const OrdersListing = () => {
                       orderDetailsHandler={orderDetailsHandler}
                     />
                   </TD>
-                  <TD>{order?.variant?.product?.name?.slice(0, 30)}</TD>
+                  <TD>
+                    <div className="flex flex-col gap-1">
+                      <span>{order?.variant?.product?.name?.slice(0, 30)}</span>
+                      {order?.selectedWeight === null ? (
+                        <span className="border p-1 w-fit">{order?.variant?.name}</span>
+                      ) : (
+                        <span className="flex gap-1">
+                          <span className="border p-1">
+                            {order?.variant?.primary_attribute?.value}
+                          </span>
+                          <span className="border p-1">{order?.selectedWeight?.weight || 0}</span>
+                        </span>
+                      )}
+                    </div>
+                  </TD>
                   <TD>{order?.quantity}</TD>
                   <TD>
                     <CustomerInfoCard data={order?.order} />

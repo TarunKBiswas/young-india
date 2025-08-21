@@ -12,6 +12,7 @@ import { webState } from "../../../data/webStates";
 import { data } from "../../../data/FooterData";
 import Container from "../UI/Wrappers/Container.Wrapper";
 import { useMemo } from "react";
+import { Link } from "react-router-dom";
 
 const Footer = ({ footRef }) => {
   const snap = useSnapshot(webState);
@@ -114,6 +115,11 @@ const Footer = ({ footRef }) => {
                     </a>
                   </li>
                 ))}
+                <li>
+                  <Link to="/blogs" className="text-sm leading-6 capitalize">
+                  Blogs
+                  </Link>
+                </li>
                 {/* <li>
                   <a
                     href="mission&vision"

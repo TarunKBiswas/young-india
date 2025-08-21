@@ -4,6 +4,7 @@ import { state } from "../data/state";
 import resizer from "./resizer";
 import Resizer from "react-image-file-resizer";
 
+// export const IP = "http://localhost:7677";
 export const IP = "https://youngindianutrition.api.socialseller.in";
 
 export const baseURL = `${IP}/api`;

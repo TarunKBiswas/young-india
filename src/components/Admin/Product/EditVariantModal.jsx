@@ -12,6 +12,7 @@ import { SuccessAlert } from "../../Toast.jsx";
 import { useParams } from "react-router-dom";
 import SimpleModal from "../Modals/SimpleModal.jsx";
 import UpdateButton from "../UI/Buttons/UpdateButton.jsx";
+import Multiselect from "multiselect-react-dropdown";
 
 const EditVariantModal = () => {
   const snap = useSnapshot(state);
@@ -32,15 +33,62 @@ const EditVariantModal = () => {
   // const [pTo, setPTo] = useState(null);
   // const [pPrice, setPPrice] = useState(null);
   // const [pPremumPrice, setPPremiumPrice] = useState(null);
-
   const [variant, setVariant] = useState({
     name: data?.name,
     price: data?.price,
     strike_price: data?.strike_price,
     // premiumPrice: data?.premiumPrice,
     quantity: data?.quantity,
+    primary_attribute: {
+      value: data?.primary_attribute?.value || "",
+    },
   });
 
+  const [selectedWeights, setselectedWeights] = useState(
+    data?.secondary_attribute?.value || []
+  );
+  console.log(id);
+  const [weightsPricing, setWeightsPricing] = useState(
+    data?.weights_pricing
+      ? data.weights_pricing.map((p) => ({
+          ...p,
+          price: p.price?.toString() || "",
+          strike_price: p.strike_price?.toString() || "",
+          quantity: p.quantity?.toString() || "",
+        }))
+      : []
+  );
+
+  const weights = [
+    { label: "500gm", value: "500gm" },
+    { label: "1kg", value: "1kg" },
+    { label: "2kg", value: "2kg" },
+    { label: "3kg", value: "3kg" },
+    { label: "4kg", value: "4kg" },
+    { label: "5kg", value: "5kg" },
+  ];
+
+  const handleWeightChange = (selectedList) => {
+    const newWeights = selectedList.map((item) => item.value);
+    setselectedWeights(newWeights);
+
+    // Initialize / preserve pricing per weight
+    setWeightsPricing((prev) => {
+      return newWeights.map((w) => {
+        const existing = prev.find((p) => p.weight === w);
+        return (
+          existing || {
+            weight: w,
+            price: "",
+            strike_price: "",
+            quantity: "",
+            booking_price: "",
+            premium_price: "",
+          }
+        );
+      });
+    });
+  };
   // useEffect(() => {
   //   setBpList(data?.bulk_pricings);
   //   state.refreshBulkPriceList = false;
@@ -119,10 +167,36 @@ const EditVariantModal = () => {
 
   const updateVariantHandler = async () => {
     // let bpID = bpList?.map((bp) => bp.id);
+    // let fData = {
+    //   ...variant,
+    //   // bulk_pricings: bpID,
+    //   ProductId: Number(param.id),
+    // };
     let fData = {
-      ...variant,
-      // bulk_pricings: bpID,
+      name: variant.name,
+      price: Number(variant.price),
+      strike_price: Number(variant.strike_price),
+      // premiumPrice: Number(variant.premiumPrice),
+      quantity: Number(variant.quantity),
+      // booking_price: Number(variant.booking_price),
       ProductId: Number(param.id),
+      //  ThumbnailId: variant.ThumbnailId, // assuming you have this value somewhere
+      //  gallery: variant.gallery, // assuming you have this value somewhere
+      primary: {
+        name: "Flavour",
+        values: {
+          value: variant.primary_attribute.value,
+          hex_code: "",
+        },
+      },
+      secondary: {
+        name: "Weights",
+        values: {
+          value: selectedWeights,
+          hex_code: "",
+        },
+      },
+      weights_pricing: weightsPricing,
     };
     state.isLoading = true;
     try {
@@ -142,70 +216,184 @@ const EditVariantModal = () => {
   const closeModalHandler = () => {
     state.editVariantModal = false;
   };
+  const handlePricingChange = (index, field, value) => {
+    const newPricing = [...weightsPricing];
+    newPricing[index][field] = value;
+    setWeightsPricing(newPricing);
+  };
 
   return (
     <SimpleModal modalSize={"max-w-3xl"} closeModalHandler={closeModalHandler}>
       <div className="p-6">
-        <span className="mb-4 text-xl font-semibold ">{data?.name}</span>
+        <span className="mb-4 text-xl font-semibold ">
+          {data?.name || variant?.primary_attribute?.value}
+        </span>
 
-        <div className=" flex items-end gap-2 pb-2" key={data.id}>
-          <div>
-            <label htmlFor="">Name</label>
-            <input
-              className="w-full border-gray-200 text-xs"
-              type="text"
-              defaultValue={data?.name}
-              onChange={(e) => setVariant({ ...variant, name: e.target.value })}
-            />
-          </div>
-          <div>
-            <label htmlFor="">Price</label>
-            <input
-              className="w-full border-gray-200 text-xs"
-              type="text"
-              placeholder="Price"
-              defaultValue={data?.price}
-              onChange={(e) =>
-                setVariant({ ...variant, price: e.target.value })
-              }
-            />
-          </div>
-          <div>
-            <label htmlFor="">Strike Price</label>
-            <input
-              className="w-full border-gray-200 text-xs"
-              type="text"
-              placeholder="Strike Price"
-              defaultValue={data?.strike_price}
-              onChange={(e) =>
-                setVariant({ ...variant, strike_price: e.target.value })
-              }
-            />
-          </div>
-          {/* <div>
-            <label htmlFor="">Premium Price</label>
-            <input
-              className="w-full border-gray-200 text-xs"
-              type="text"
-              placeholder="Premium price"
-              defaultValue={data?.premiumPrice}
-              onChange={(e) =>
-                setVariant({ ...variant, premiumPrice: e.target.value })
-              }
-            />
-          </div> */}
-          <div>
-            <label htmlFor="">Quantity</label>
-            <input
-              className="w-full border-gray-200 text-xs"
-              type="text"
-              placeholder="Quantity"
-              defaultValue={data?.quantity}
-              onChange={(e) =>
-                setVariant({ ...variant, quantity: e.target.value })
-              }
-            />
-          </div>
+        <div
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 mt-2"
+          key={data.id}
+        >
+          {/* --- Flavour + Weights Flow (toggle ON) --- */}
+          {variant?.primary_attribute?.value ? (
+            <>
+              {/* Flavour */}
+              <div>
+                <label>Flavour</label>
+                <input
+                  className="w-full border border-gray-200 rounded p-2"
+                  type="text"
+                  value={variant?.primary_attribute?.value || ""}
+                  onChange={(e) =>
+                    setVariant({
+                      ...variant,
+                      primary_attribute: {
+                        ...variant.primary_attribute,
+                        value: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+
+              {/* Weights */}
+              <div>
+                <label>Weights</label>
+                <Multiselect
+                  options={weights}
+                  selectedValues={weights.filter((size) =>
+                    selectedWeights.includes(size.value)
+                  )}
+                  onSelect={handleWeightChange}
+                  onRemove={handleWeightChange}
+                  displayValue="label"
+                  placeholder="Select Weights"
+                  style={{
+                    chips: { fontSize: "12px" },
+                    multiselectContainer: { fontSize: "14px" },
+                    searchBox: { fontSize: "14px", padding: "2px 8px" },
+                    option: { fontSize: "14px", padding: "3px 8px" },
+                    inputField: {
+                      fontSize: "14px",
+                      padding: "3px 8px",
+                      width: "100%",
+                    },
+                  }}
+                />
+              </div>
+
+              {/* Weights Pricing (full width) */}
+              {weightsPricing.length > 0 && (
+                <div className="md:col-span-2 w-full mt-4">
+                  <h3 className="text-sm font-semibold mb-2">
+                    Weights Pricing
+                  </h3>
+                  <div className="grid grid-cols-4 gap-2 text-xs font-semibold mb-1">
+                    <span>Weight</span>
+                    <span>Price</span>
+                    <span>Strike Price</span>
+                    <span>Quantity</span>
+                  </div>
+                  {weightsPricing.map((row, index) => (
+                    <div
+                      key={row.weight}
+                      className="grid grid-cols-4 gap-2 mb-2"
+                    >
+                      <span className="flex items-center text-xs">
+                        {row.weight}
+                      </span>
+                      <input
+                        type="number"
+                        value={row.price}
+                        onChange={(e) =>
+                          handlePricingChange(index, "price", e.target.value)
+                        }
+                        className="border p-1 text-xs rounded"
+                      />
+                      <input
+                        type="number"
+                        value={row.strike_price}
+                        onChange={(e) =>
+                          handlePricingChange(
+                            index,
+                            "strike_price",
+                            e.target.value
+                          )
+                        }
+                        className="border p-1 text-xs rounded"
+                      />
+                      <input
+                        type="number"
+                        value={row.quantity}
+                        onChange={(e) =>
+                          handlePricingChange(index, "quantity", e.target.value)
+                        }
+                        className="border p-1 text-xs rounded"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            /* --- Simple Variant Flow (toggle OFF) --- */
+            <>
+              {/* Name */}
+              <div>
+                <label>Name</label>
+                <input
+                  className="w-full border border-gray-200 rounded p-2"
+                  type="text"
+                  placeholder="Name"
+                  // defaultValue={data?.name}
+                  value={variant?.name || ""}
+                  onChange={(e) =>
+                    setVariant({ ...variant, name: e.target.value })
+                  }
+                />
+              </div>
+              {/* Price */}
+              <div>
+                <label>Price</label>
+                <input
+                  className="w-full border border-gray-200 rounded p-2"
+                  type="number"
+                  placeholder="Price"
+                  value={variant.price || ""}
+                  onChange={(e) =>
+                    setVariant({ ...variant, price: e.target.value })
+                  }
+                />
+              </div>
+
+              {/* Strike Price */}
+              <div>
+                <label>Strike Price</label>
+                <input
+                  className="w-full border border-gray-200 rounded p-2"
+                  type="number"
+                  placeholder="Strike Price"
+                  value={variant.strike_price || ""}
+                  onChange={(e) =>
+                    setVariant({ ...variant, strike_price: e.target.value })
+                  }
+                />
+              </div>
+
+              {/* Quantity */}
+              <div>
+                <label>Quantity</label>
+                <input
+                  className="w-full border border-gray-200 rounded p-2"
+                  type="number"
+                  placeholder="Quantity"
+                  value={variant.quantity || ""}
+                  onChange={(e) =>
+                    setVariant({ ...variant, quantity: e.target.value })
+                  }
+                />
+              </div>
+            </>
+          )}
         </div>
 
         {/* <div className="mb-4 flex items-center flex-col">

@@ -123,10 +123,23 @@ const OrderDetails = () => {
                           {" Pcs"}
                         </span>
                       </span>
-                      <span className="font-medium capitalize">
-                        {"Variant - "}
-                        {orderDetails?.variant?.name}
-                      </span>
+                      {orderDetails?.selectedWeightId == null ? (
+                        <span className="font-medium capitalize">
+                          {"Variant - "}
+                          {orderDetails?.variant?.name}
+                        </span>
+                      ) : (
+                        <span className="flex gap-2">
+                          <span className="font-medium capitalize">
+                            {"Flavour - "}
+                            {orderDetails?.variant?.primary_attribute?.value}
+                          </span>
+                          <span className="font-medium capitalize">
+                            {"Weight - "}
+                            {orderDetails?.selectedWeight?.weight}
+                          </span>
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="w-full max-w-[20%] flex flex-col items-end justify-between">
@@ -140,14 +153,15 @@ const OrderDetails = () => {
                         <span className="font-medium">
                           {"Price - "}
                           {/* {"₹ " + orderDetails?.price} */}
-                          {"₹ " + orderDetails?.variant?.price}
+                         ₹ { orderDetails?.variant?.price || orderDetails?.selectedWeight?.price}
                         </span>
                       </p>
                       <p className="text-gray-700 text-xs lg:text-base">
                         <span className="font-medium">
                           {"Total - "}
                           {/* {"₹ " + orderDetails?.price * orderDetails?.quantity} */}
-                          {"₹ " + orderDetails?.price}
+                          {/* {"₹ " + orderDetails?.price} */}
+                           ₹ { orderDetails?.price || orderDetails?.selectedWeight?.price}
                         </span>
                       </p>
                     </div>

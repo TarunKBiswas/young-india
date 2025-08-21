@@ -337,3 +337,18 @@ export const bulkRejOrder = async (data) => {
   }
   return false;
 };
+
+export const invoiceOrder = async (id) => {
+  try {
+    let res = await axios.get(`${baseURL}/orders/${id}/invoice`, {
+      ...getHeader(),
+      responseType: "blob",
+    });
+    if (res?.status === 200) {
+      return res;
+    }
+  } catch (error) {
+    console.error(error);
+  }
+  return false;
+};
