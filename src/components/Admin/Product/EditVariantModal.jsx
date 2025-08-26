@@ -12,7 +12,7 @@ import { SuccessAlert } from "../../Toast.jsx";
 import { useParams } from "react-router-dom";
 import SimpleModal from "../Modals/SimpleModal.jsx";
 import UpdateButton from "../UI/Buttons/UpdateButton.jsx";
-import Multiselect from "multiselect-react-dropdown";
+import CreatableSelect from "react-select/creatable";
 
 const EditVariantModal = () => {
   const snap = useSnapshot(state);
@@ -258,25 +258,64 @@ const EditVariantModal = () => {
               {/* Weights */}
               <div>
                 <label>Weights</label>
-                <Multiselect
+                <CreatableSelect
+                  isMulti
                   options={weights}
-                  selectedValues={weights.filter((size) =>
-                    selectedWeights.includes(size.value)
-                  )}
-                  onSelect={handleWeightChange}
-                  onRemove={handleWeightChange}
-                  displayValue="label"
-                  placeholder="Select Weights"
-                  style={{
-                    chips: { fontSize: "12px" },
-                    multiselectContainer: { fontSize: "14px" },
-                    searchBox: { fontSize: "14px", padding: "2px 8px" },
-                    option: { fontSize: "14px", padding: "3px 8px" },
-                    inputField: {
-                      fontSize: "14px",
-                      padding: "3px 8px",
-                      width: "100%",
-                    },
+                  // value={weights.filter((size) =>
+                  //   selectedWeights.includes(size.value)
+                  // )}
+                  value={selectedWeights.map((w) => ({ label: w, value: w }))}
+                  onChange={(selectedOptions) => {
+                    const newWeights =
+                      selectedOptions?.map((opt) => opt.value) || [];
+                    setselectedWeights(newWeights);
+
+                    setWeightsPricing((prev) => {
+                      // 1. Start with a copy of the existing pricing
+                      let updated = [...prev];
+
+                      // 2. Add any new weights (if not already present)
+                      newWeights.forEach((w) => {
+                        const exists = updated.find((p) => p.weight === w);
+                        if (!exists) {
+                          updated.push({
+                            weight: w,
+                            price: "",
+                            strike_price: "",
+                            quantity: "",
+                            booking_price: "",
+                            premium_price: "",
+                          });
+                        }
+                      });
+
+                      // 3. Remove any rows for deselected weights
+                      updated = updated.filter((p) =>
+                        newWeights.includes(p.weight)
+                      );
+
+                      // 4. Keep order the same as newWeights
+                      updated.sort(
+                        (a, b) =>
+                          newWeights.indexOf(a.weight) -
+                          newWeights.indexOf(b.weight)
+                      );
+
+                      return updated;
+                    });
+                  }}
+                  placeholder="Select or create weights"
+                  menuPortalTarget={document.body} // ⬅️ render dropdown outside modal
+                  styles={{
+                    menuPortal: (base) => ({ ...base, zIndex: 102 }), // ⬅️ raise z-index
+                    control: (base) => ({ ...base, fontSize: "15px",borderColor: "rgb(215 225 215)", }),
+                    option: (base) => ({ ...base, fontSize: "14px" }),
+                    input: (base) => ({
+                      ...base,
+                      fontSize: "16px",
+                      padding: "4px",
+                    }),
+                    placeholder: (base) => ({ ...base, fontSize: "14px" }),
                   }}
                 />
               </div>
@@ -396,7 +435,15 @@ const EditVariantModal = () => {
           )}
         </div>
 
-        {/* <div className="mb-4 flex items-center flex-col">
+        <UpdateButton func={updateVariantHandler} />
+      </div>
+    </SimpleModal>
+  );
+};
+
+export default EditVariantModal;
+{
+  /* <div className="mb-4 flex items-center flex-col">
           <div className="w-full flex items-center justify-between mt-6">
             <div className="font-semibold  ">
               <h5>Bulk Pricing</h5>
@@ -517,12 +564,5 @@ const EditVariantModal = () => {
               </div>
             </div>
           ) : null}
-        </div> */}
-
-        <UpdateButton func={updateVariantHandler} />
-      </div>
-    </SimpleModal>
-  );
-};
-
-export default EditVariantModal;
+        </div> */
+}

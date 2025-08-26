@@ -4,7 +4,7 @@ import { createBulkPrice, createVariant } from "../../../utils/productsAPI";
 import { useSnapshot } from "valtio";
 import { SuccessAlert } from "../../Toast";
 import SimpleModal from "../Modals/SimpleModal";
-import Multiselect from "multiselect-react-dropdown";
+import CreatableSelect from "react-select/creatable";
 // import ProductInputMedia from "../UI/Inputs/ProductInputMedia";
 // import { resizeFile, uploadImage } from "../../../utils/const_API";
 
@@ -312,22 +312,65 @@ const CreateVariantModal = () => {
               {/* Weights */}
               <div>
                 <label className="block text-sm font-medium">Weights</label>
-                <Multiselect
+                <CreatableSelect
+                  isMulti
                   options={weights}
-                  onSelect={handleWeightChange}
-                  onRemove={handleWeightChange}
-                  displayValue="label"
-                  placeholder="Select Weights"
-                  style={{
-                    chips: { fontSize: "12px" },
-                    multiselectContainer: { fontSize: "12px" },
-                    searchBox: { fontSize: "12px", padding: "2px 8px" },
-                    option: { fontSize: "12px", padding: "3px 8px" },
-                    inputField: {
-                      fontSize: "12px",
-                      padding: "3px 8px",
-                      width: "100%",
-                    },
+                  value={selectedWeights.map((w) => ({ label: w, value: w }))}
+                  onChange={handleWeightChange}
+                  // onChange={(selectedOptions) => {
+                  //   const newWeights =
+                  //     selectedOptions?.map((opt) => opt.value) || [];
+                  //   setSelectedWeights(newWeights);
+
+                  //   // Update weightsPricing without losing existing data
+                  //   setWeightsPricing((prev) => {
+                  //     let updated = [...prev];
+
+                  //     // Add missing ones
+                  //     newWeights.forEach((w) => {
+                  //       if (!updated.find((p) => p.weight === w)) {
+                  //         updated.push({
+                  //           weight: w,
+                  //           price: "",
+                  //           strike_price: "",
+                  //           quantity: "",
+                  //           // booking_price: "",
+                  //           // premium_price: "",
+                  //         });
+                  //       }
+                  //     });
+
+                  //     // Remove deselected
+                  //     updated = updated.filter((p) =>
+                  //       newWeights.includes(p.weight)
+                  //     );
+
+                  //     // Keep order aligned with select
+                  //     updated.sort(
+                  //       (a, b) =>
+                  //         newWeights.indexOf(a.weight) -
+                  //         newWeights.indexOf(b.weight)
+                  //     );
+
+                  //     return updated;
+                  //   });
+                  // }}
+                  placeholder="Select or create weights"
+                  menuPortalTarget={document.body} // ⬅️ render dropdown outside modal
+                  styles={{
+                    menuPortal: (base) => ({ ...base, zIndex: 102 }), // ⬅️ raise z-index
+                    control: (base) => ({
+                      ...base,
+                      fontSize: "15px",
+                      borderColor: "rgb(215 225 215)",
+                    }),
+                    option: (base) => ({ ...base, fontSize: "14px" }),
+                    input: (base) => ({
+                      ...base,
+                      fontSize: "16px",
+                      padding: "4px",
+                    }),
+                    placeholder: (base) => ({ ...base, fontSize: "14px" }),
                   }}
                 />
               </div>

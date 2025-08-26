@@ -26,6 +26,7 @@ import { AddButton } from "../UI/Buttons/AddButton.jsx";
 import RatingInput from "../UI/Inputs/RatingInput.jsx";
 import OutletWrapper from "../../../Pages/OutletWrapper.jsx";
 import Multiselect from "multiselect-react-dropdown";
+import CreatableSelect from "react-select/creatable";
 
 const schema = yup.object({
   name: yup.string(),
@@ -109,13 +110,34 @@ const AddProduct = () => {
     setCollections(res?.data?.data);
   };
 
-  const handleWeightChange = (selectedList) => {
-    const newWeights = selectedList.map((item) => item.value);
-    setSelectedWeights(newWeights);
+  // const handleWeightChange = (selectedList) => {
+  //   // const newWeights = selectedList.map((item) => item.value);
+  //   setSelectedWeights(selectedList);
 
-    // Initialize / preserve pricing per weight
-    setWeightsPricing((prev) => {
-      return newWeights.map((w) => {
+  //   // Initialize / preserve pricing per weight
+  //   setWeightsPricing((prev) => {
+  //     return selectedList.map((w) => {
+  //       const existing = prev.find((p) => p.weight === w);
+  //       return (
+  //         existing || {
+  //           weight: w,
+  //           price: "",
+  //           strike_price: "",
+  //           quantity: "",
+  //           // booking_price: "",
+  //           // premium_price: "",
+  //         }
+  //       );
+  //     });
+  //   });
+  // };
+
+  const handleWeightChange = (newValue) => {
+    const weightValues = (newValue || []).map((w) => w.value);
+    setSelectedWeights(newValue || []);
+
+    setWeightsPricing((prev) =>
+      weightValues.map((w) => {
         const existing = prev.find((p) => p.weight === w);
         return (
           existing || {
@@ -123,12 +145,10 @@ const AddProduct = () => {
             price: "",
             strike_price: "",
             quantity: "",
-            // booking_price: "",
-            // premium_price: "",
           }
         );
-      });
-    });
+      })
+    );
   };
 
   const handlePricingChange = (index, field, value) => {
@@ -228,6 +248,10 @@ const AddProduct = () => {
   // const removeVariantGalleryImage = (index) => {
   //   setVariantGallery(variantGallery?.filter((item, i) => i !== index));
   // };
+  console.log("selected weights ", selectedWeights.value);
+  // const removeVariantGalleryImage = (index) => {
+  //   setVariantGallery(variantGallery?.filter((item, i) => i !== index));
+  // };
 
   const addVariantHandler = async () => {
     let data;
@@ -255,7 +279,7 @@ const AddProduct = () => {
         secondary: {
           name: "Weights",
           values: {
-            value: selectedWeights,
+            value: selectedWeights.map((w) => w.value),
             hex_code: "",
           },
         },
@@ -794,26 +818,55 @@ const AddProduct = () => {
                           <label>
                             Weights <span className="text-red-500">*</span>
                           </label>
-                          <Multiselect
-                            options={weights}
+                          {/* <Multiselect
+                            options={[]} // leave empty if you only want custom inputs
+                            isObject={false}
                             onSelect={handleWeightChange}
                             onRemove={handleWeightChange}
                             displayValue="label"
                             placeholder="Select Weights"
                             style={{
-                              chips: { fontSize: "12px" },
-                              multiselectContainer: { fontSize: "12px" },
-                              searchBox: {
-                                marginTop: "4px",
-                                fontSize: "12px",
-                                padding: "2px 8px",
+                              // chips: { fontSize: "12px" },
+                              // multiselectContainer: { fontSize: "12px" },
+                              // searchBox: {
+                              //   marginTop: "4px",
+                              //   fontSize: "12px",
+                              //   padding: "2px 8px",
+                              // },
+                              // option: { fontSize: "12px", padding: "3px 8px" },
+                              // inputField: {
+                              //   fontSize: "12px",
+                              //   padding: "4px 8px",
+                              //   width: "100%",
                               },
-                              option: { fontSize: "12px", padding: "3px 8px" },
-                              inputField: {
-                                fontSize: "12px",
-                                padding: "4px 8px",
-                                width: "100%",
-                              },
+                            }}
+                          /> */}
+                          <CreatableSelect
+                            isMulti
+                            placeholder="Enter custom weight (e.g. 750gm, 2kg)"
+                            value={selectedWeights}
+                            onChange={handleWeightChange}
+                            formatCreateLabel={(inputValue) =>
+                              `Add "${inputValue}"`
+                            }
+                            menuPortalTarget={document.body} // ⬅️ render dropdown outside modal
+                            styles={{
+                              menuPortal: (base) => ({ ...base, zIndex: 102 }), // ⬅️ raise z-index
+                              control: (base) => ({
+                                ...base,
+                                fontSize: "15px",
+                                borderColor: "rgb(215 225 215)",
+                              }),
+                              option: (base) => ({ ...base, fontSize: "14px" }),
+                              input: (base) => ({
+                                ...base,
+                                fontSize: "16px",
+                                padding: "4px",
+                              }),
+                              placeholder: (base) => ({
+                                ...base,
+                                fontSize: "14px",
+                              }),
                             }}
                           />
                         </div>
