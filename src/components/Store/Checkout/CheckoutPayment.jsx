@@ -123,9 +123,17 @@ const CheckoutPayment = () => {
     finalData.isResellerOrder = true;
   }
 
+  // console.log("finalData-", snap.cartItems);
+
   const checkoutHandler = async () => {
     if (!payment_mode) {
       return FailureAlert("Please Select Payment Mode");
+    }
+    if (
+      payment_mode === "COD" &&
+      snap.cartItems?.some((data) => data?.productData?.cod_enabled === false)
+    ) {
+      return FailureAlert("COD is not available for this product");
     }
 
     setIsLoading(true);
