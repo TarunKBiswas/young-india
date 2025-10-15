@@ -75,7 +75,7 @@ const GlobalBrandSettings = () => {
       delete data.id;
       delete data.createdAt;
       delete data.updatedAt;
-      delete data.youtube;
+      // delete data.youtube;
 
       if (darkLogo || lightLogo || favicon !== null) {
         if (darkLogo !== null) {
@@ -132,7 +132,7 @@ const GlobalBrandSettings = () => {
         delete finalData.id;
         delete finalData.createdAt;
         delete finalData.updatedAt;
-        delete data.youtube;
+        // delete data.youtube;
         delete data.about_us;
 
         let updateData = await updateGlobalBrand(finalData);
@@ -259,7 +259,7 @@ const GlobalBrandSettings = () => {
         <InputComp2
           type={"url"}
           label={"Youtube"}
-          value={brandData?.telegram}
+          value={brandData?.youtube}
           register={register}
           registerValue={"youtube"}
           size={"w-full flex flex-col text-sm gap-1"}
