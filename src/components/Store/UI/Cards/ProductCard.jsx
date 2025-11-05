@@ -50,7 +50,19 @@ const ProductCard = ({ product, onClick }) => {
 
   const strikePrice =
     item?.variants?.length > 0
-      ? Math.min(...item.variants.map((v) => v.strike_price))
+      ? // ? Math.min(...item.variants.map((v) => v.strike_price))
+        Math.min(
+          ...item.variants.map((v) => {
+            if (v.weights_pricing && v.weights_pricing.length > 0) {
+              // if weights_pricing exists, take min price from it
+              return Math.min(
+                ...v.weights_pricing.map((wp) => Number(wp.strike_price))
+              );
+            }
+            // otherwise use variant price
+            return Number(v.strike_price) || Infinity;
+          })
+        )
       : "Not Available";
 
   const thumbnailUrl = thumbnail;

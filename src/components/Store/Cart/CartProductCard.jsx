@@ -45,9 +45,13 @@ const CartProductCard = ({ data }) => {
   //   }
   // };
 
+  // console.log("Selected id:", selectedId);
+
   const deleteItemHandler = async (id) => {
     const updatedCart = snap.cartItems.filter((item) => item.id !== id);
     webState.cartItems = [...updatedCart];
+    // console.log(id);
+
     try {
       const res = await deleteHandlerWithToken("cart/remove", id);
       if (res?.status === 200) {
@@ -104,7 +108,8 @@ const CartProductCard = ({ data }) => {
                 />
                 <Delete
                   className="h-5 w-5 text-themebg-themecolor/70 cursor-pointer hover:scale-90 transition-all duration-200"
-                  onClick={() => handleDelete(data?.CartVariant?.VariantId)}
+                  onClick={() => handleDelete(data?.id)}
+                  // onClick={() => handleDelete(data?.CartVariant?.VariantId)}
                 />
               </div>
             </div>
@@ -115,9 +120,7 @@ const CartProductCard = ({ data }) => {
               <div className="text-xs w-full lg:text-sm ">
                 <span className="w-full flex text-themebg-themecolor/70 text-sm font-medium leading-normal ">
                   Product Name :
-                  <span className="px-2">
-                    {data?.productData?.name}
-                  </span>
+                  <span className="px-2">{data?.productData?.name}</span>
                 </span>
               </div>
               <div className="text-xs w-full lg:text-sm ">
@@ -143,15 +146,23 @@ const CartProductCard = ({ data }) => {
               <span className="text-themebg-themecolor/70 text-sm font-medium leading-normal">
                 {"Price: ₹ "}
                 <span className="text-xs lg:text-sm">
-                  { !data?.CartVariant?.selectedWeightId ? Number(data?.price).toFixed(2) :
-                    Number(data?.CartVariant?.selectedWeight?.price).toFixed(2)}
+                  {!data?.CartVariant?.selectedWeightId
+                    ? Number(data?.price).toFixed(2)
+                    : Number(data?.CartVariant?.selectedWeight?.price).toFixed(
+                        2
+                      )}
                 </span>
               </span>
 
               <span className="text-themebg-themecolor/70 text-base font-semibold leading-normal">
                 {"Total Price: ₹ "}
                 <span className="text-xs lg:text-sm">
-                  { !data?.CartVariant?.selectedWeightId ? Number(data?.price).toFixed(2) * data?.CartVariant?.quantity : Number(data?.CartVariant?.selectedWeight?.price).toFixed(2) * data?.CartVariant?.quantity}
+                  {!data?.CartVariant?.selectedWeightId
+                    ? Number(data?.price).toFixed(2) *
+                      data?.CartVariant?.quantity
+                    : Number(data?.CartVariant?.selectedWeight?.price).toFixed(
+                        2
+                      ) * data?.CartVariant?.quantity}
                 </span>
               </span>
               {data?.resellengPrice && (
@@ -164,8 +175,8 @@ const CartProductCard = ({ data }) => {
               )}
             </div>
 
-            {!data?.product?.cod_enabled && (
-              <span className="inline-flex items-center max-h-max px-2.5 py-0.5 bg-red-100 text-red-800 rounded-full text-xs font-medium ">
+            {!data?.productData?.cod_enabled && (
+              <span className="inline-flex  items-center max-h-max px-2.5 py-0.5 bg-red-100 text-red-800 rounded-full text-xs font-medium ">
                 COD Not Available
               </span>
             )}

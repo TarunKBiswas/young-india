@@ -46,7 +46,7 @@ const Footer = ({ footRef }) => {
 
   return (
     <footer
-      className="bg-[#111111] relative text-textcolor px-4 md:px-0.5 border-t"
+      className="bg-gray-400 relative text-textcolor px-4 md:px-0.5 border-t"
       ref={footRef}
     >
       <Container className="w-full mx-auto sm:px-3 lg:px-1 py-10">
@@ -117,7 +117,7 @@ const Footer = ({ footRef }) => {
                 ))}
                 <li>
                   <Link to="/blogs" className="text-sm leading-6 capitalize">
-                  Blogs
+                    Blogs
                   </Link>
                 </li>
                 {/* <li>
@@ -202,17 +202,6 @@ const Footer = ({ footRef }) => {
           <p className="text-xs capitalize font-normal leading-6">
             &copy; {name}. All rights reserved.
           </p>
-          <p className="text-xs font-normal leading-6 tracking-wider flex flex-col xl:flex-row items-center">
-            &copy; Designed and Developed by
-            <a
-              href="https://socialseller.in/"
-              target="_blank"
-              rel="noreferrer"
-              className="px-1 text-xs flex items-center leading-6 tracking-wide text-green-500"
-            >
-              Social Seller Technology
-            </a>
-          </p>
         </div>
       </Container>
     </footer>
@@ -220,3 +209,15 @@ const Footer = ({ footRef }) => {
 };
 
 export default Footer;
+
+// <p className="text-xs font-normal leading-6 tracking-wider flex flex-col xl:flex-row items-center">
+//   &copy; Designed and Developed by
+//   <a
+//     href="https://socialseller.in/"
+//     target="_blank"
+//     rel="noreferrer"
+//     className="px-1 text-xs flex items-center leading-6 tracking-wide text-green-500"
+//   >
+//     Social Seller Technology
+//   </a>
+// </p>

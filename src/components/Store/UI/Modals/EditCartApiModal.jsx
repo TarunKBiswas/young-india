@@ -23,9 +23,11 @@ const EditCartApiModal = ({ setShowEditModal, data }) => {
   };
 
   const clickHandler = async () => {
+    console.log(data);
     const body = {
       quantity: prodQuantity,
-      VariantId: data?.CartVariant?.VariantId,
+      // VariantId: data?.CartVariant?.VariantId,
+      VariantId: data?.id,
     };
     try {
       const res = await putHandlerWithToken("cart/update", body);
@@ -66,13 +68,20 @@ const EditCartApiModal = ({ setShowEditModal, data }) => {
             <div className="flex flex-col items-start gap-2">
               <div className="flex flex-col">
                 <span className="text-themecolor text-base lg:text-xl w-full truncate font-medium capitalize">
-                  {data?.product?.name}
+                  {data?.productData?.name}
                 </span>
                 <span className="text-xs lg:text-base font-semibold">
-                  Price: ₹{Number(parseInt(data?.price)).toFixed(2)}
+                  Price: ₹
+                  {isNaN(Number(data?.price))
+                    ? Number(data.price).toFixed(2)
+                    : Number(
+                        data?.CartVariant?.selectedWeight?.price || 0
+                      ).toFixed(2)}
                 </span>
               </div>
-              <span className="text-xs lg:text-sm">Variant : {data?.name}</span>
+              <span className="text-xs lg:text-sm">
+                Variant : {data?.CartVariant?.selectedWeight?.weight}
+              </span>
             </div>
 
             {/* {productDetail?.resellengPrice && (
