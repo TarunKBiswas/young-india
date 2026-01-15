@@ -46,7 +46,7 @@ const Footer = ({ footRef }) => {
 
   return (
     <footer
-      className="bg-gray-400 relative text-textcolor px-4 md:px-0.5 border-t"
+      className="bg-black relative text-textcolor px-4 md:px-0.5 border-t"
       ref={footRef}
     >
       <Container className="w-full mx-auto sm:px-3 lg:px-1 py-10">

@@ -93,7 +93,7 @@ const MainContainer = () => {
     // console.log(snap.globalData);
     if (snap.globalData?.data?.server_subscription === false) {
       const timer = setTimeout(() => {
-        state.paymentAlertModal = true;
+        // state.paymentAlertModal = true;
       }, 1000);
       return () => clearTimeout(timer);
     }

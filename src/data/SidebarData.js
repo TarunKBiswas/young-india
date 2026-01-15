@@ -106,12 +106,12 @@ export const sidebarMenu = [
     icon: RiCoupon2Line,
     route: "coupons",
   },
-  {
-    id: 14,
-    name: "Supplier",
-    icon: HiMiniArrowsUpDown,
-    route: "supplier",
-  },
+  // {
+  //   id: 14,
+  //   name: "Supplier",
+  //   icon: HiMiniArrowsUpDown,
+  //   route: "supplier",
+  // },
   {
     id: 15,
     name: "Transactions",
@@ -136,12 +136,12 @@ export const sidebarMenu = [
     icon: BsWallet,
     route: "wallet",
   },
-  {
-    id: 19,
-    name: "Campaign",
-    icon: BsBell,
-    route: "campaign&Group",
-  },
+  // {
+  //   id: 19,
+  //   name: "Campaign",
+  //   icon: BsBell,
+  //   route: "campaign&Group",
+  // },
   {
     id: 20,
     name: "Settings",

@@ -54,11 +54,10 @@ const Sidebar = ({ showSidebar }) => {
                 {filteredSidebarData?.map((data, i) => (
                   <div
                     key={i}
-                    className={`text-white text-sm hover:bg-blue-950 duration-300 ${
-                      activeRoute === data?.route
+                    className={`text-white text-sm hover:bg-blue-950 duration-300 ${activeRoute === data?.route
                         ? "bg-blue-950 font-semibold"
                         : ""
-                    } hover:text-white`}
+                      } hover:text-white`}
                   >
                     <Link
                       to={data?.route}
@@ -68,9 +67,8 @@ const Sidebar = ({ showSidebar }) => {
                       <data.icon className="text-[#3970e7] font-bold h-6 w-6" />
                       <div className="w-full flex items-center justify-between">
                         <span
-                          className={`text-sm ml-3 text-white font-medium ${
-                            snap.hideSideBarName ? "hidden" : "block"
-                          }`}
+                          className={`text-sm ml-3 text-white font-medium ${snap.hideSideBarName ? "hidden" : "block"
+                            }`}
                         >
                           {data.name}
                         </span>
@@ -78,7 +76,7 @@ const Sidebar = ({ showSidebar }) => {
                     </Link>
                   </div>
                 ))}
-                <div
+                {/* <div
     className={`text-white text-sm hover:bg-blue-950 duration-300 ${
       activeRoute === "/blogs"
         ? "bg-blue-950 font-semibold"
@@ -90,7 +88,6 @@ const Sidebar = ({ showSidebar }) => {
       className="p-2.5 mt-0.5 flex items-center px-4 transition-all duration-1000 cursor-pointer"
       onClick={() => handleClick("/blogs")}
     >
-      {/* Example icon from Heroicons */}
       <svg
         className="text-[#3970e7] font-bold h-6 w-6"
         fill="none"
@@ -110,7 +107,7 @@ const Sidebar = ({ showSidebar }) => {
         </span>
       </div>
     </Link>
-  </div>
+  </div> */}
               </nav>
             </div>
             {/* Fixed Logout Button */}

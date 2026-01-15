@@ -84,7 +84,7 @@ const ProductCard = ({ product, onClick }) => {
           className="object-cover object-top rounded-md rounded-b-none group-hover:scale-105 transition-all duration-700  min-h-[250px] lg:min-h-[370px] lg:max-h-[370px] w-full"
         />
       </div>
-      <div className="my-2 flex flex-col w-full gap-1 px-2 items-center lg:min-h-[76px] justify-between">
+      <div className="my-2 flex flex-col w-full gap-1 px-2 items-center ljustify-between">
         <span className="lg:hidden text-sm lg:text-base w-full flex items-center justify-start text-gray-700 capitalize font-medium">
           {name?.substring(0, 22)} <span>{name?.length > 21 && "..."}</span>
         </span>
